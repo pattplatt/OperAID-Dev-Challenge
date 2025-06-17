@@ -1,0 +1,4 @@
+<h2>Dashboard</h2>
+
+<canvas baseChart [data]="(chartData$ | async) || undefined" [options]="chartOptions" [type]="chartType"
+    style="display:block; height:500px; width:100%;"></canvas>
