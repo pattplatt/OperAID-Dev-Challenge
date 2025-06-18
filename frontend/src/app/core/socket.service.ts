@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Socket } from 'ngx-socket-io';
+import { environment } from '../../environments/environment';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
@@ -8,7 +9,7 @@ export class SocketService extends Socket {
   mqtt$: Observable<{ topic: string; payload: { machineId: string; scrapIndex: number; value: number; timestamp: string }; ts: number }>;
 
   constructor() {
-    super({ url: 'http://localhost:3000', options: {} });
+    super({ url: environment.backendUrl, options: {} });
 
     this.mqtt$ = this.fromEvent<{ topic: string; payload: string }>('mqtt').pipe(
       map(msg => ({
