@@ -7,6 +7,16 @@ Before starting, ensure you have the following installed on your system:
 - [Node.js](https://nodejs.org/) (includes npm)
 - [Mosquitto MQTT Broker](https://mosquitto.org/)
 
+## Environment Variables
+
+The backend and frontend can be configured with the following variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MQTT_URL` | URL of the MQTT broker. | `mqtt://localhost:1883` |
+| `SOCKET_ORIGINS` | Comma separated list of allowed origins for Socket.IO. | `http://localhost:4200,http://localhost:5173` |
+| `socketUrl` | WebSocket URL used by the Angular app (set in `src/environments/environment.ts`). | `http://localhost:3000` |
+
 ## Installing Mosquitto
 
 ### macOS
