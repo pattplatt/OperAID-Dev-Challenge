@@ -15,7 +15,7 @@ type MqttMsg = {
 @Injectable({ providedIn: 'root' })
 export class SocketService extends Socket {
 
-  private readonly mqttMessage$: Observable<MqttMsg> = this.fromEvent<MqttMsg>('mqtt').pipe(
+  private readonly mqttMessage$: Observable<MqttMsg> = (this.fromEvent('mqtt') as Observable<MqttMsg>).pipe(
     distinctUntilChanged((a, b) =>
       a.timestamp === b.timestamp &&
       a.machineId === b.machineId &&
