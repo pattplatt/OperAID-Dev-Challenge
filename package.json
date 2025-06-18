@@ -1,0 +1,16 @@
+{
+  "name": "operaid-challenge",
+  "private": true,
+  "workspaces": [ "backend", "frontend" ],
+"scripts": {
+  "start": "concurrently \"npm run start:broker\" \"npm run start:backend\" \"npm run start:publisher\"",
+  "start:broker": "mosquitto -c mosquitto/config/mosquitto.conf",
+  "start:backend": "npm --prefix backend run start",
+  "start:publisher": "npm --prefix backend run publisher",
+  "start:frontend": "npm --prefix frontend install && npm --prefix frontend start",
+  "start:all": "concurrently \"npm run start:broker\" \"npm run start:backend\" \"npm run start:publisher\" \"npm run start:frontend\""
+},
+  "devDependencies": {
+    "concurrently": "^7.0.0"
+  }
+}
