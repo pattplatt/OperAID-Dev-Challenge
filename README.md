@@ -1,22 +1,20 @@
 # OperAID-Dev-Challenge
 
-## Prerequisites
+This repository contains a small demo stack consisting of a Node.js backend, an Angular frontend and a Mosquitto MQTT broker. The backend subscribes to MQTT topics and broadcasts metrics over WebSockets for the frontend dashboard.
 
-Before starting, ensure you have the following installed on your system:
+## Prerequisites
 
 - [Node.js](https://nodejs.org/) (includes npm)
 - [Mosquitto MQTT Broker](https://mosquitto.org/)
 
-## Installing Mosquitto
+### Installing Mosquitto
 
-### macOS
-
+#### macOS
 ```bash
 brew install mosquitto
 ```
 
-### Ubuntu/Debian
-
+#### Ubuntu/Debian
 ```bash
 sudo apt update
 sudo apt install mosquitto mosquitto-clients
@@ -24,65 +22,32 @@ sudo systemctl enable mosquitto
 sudo systemctl start mosquitto
 ```
 
-## Starting the Backend
+## Running the Entire Stack
 
-From the root directory, install dependencies and start the backend server:
-
+From the repository root install all dependencies and start every service (broker, backend, publisher and frontend) in parallel:
 ```bash
-npm install && npm run start
+npm install
+npm run start:all
 ```
 
-This command installs the required Node.js packages and starts the backend service.
-
-## Starting Individual Services
-
-If you prefer to start each service separately, use the following commands:
-
-### Backend
-
-From the root directory:
-
+To run only the broker, backend and publisher without the Angular dev server use:
 ```bash
-npm install && npm run start
+npm run start
 ```
 
-This starts the backend server.
+## Individual Services
 
-### Publisher
+Each service can be started separately if needed.
 
-From the root directory, run the MQTT publisher script:
+- **Backend** – see [backend/README.md](backend/README.md) for detailed instructions.
+- **Frontend** – from the root run `npm run start:frontend` or from the `frontend` directory run `ng serve`.
+- **Broker** – `mosquitto -c mosquitto/config/mosquitto.conf`.
+- **Publisher** – `npm --prefix backend run publisher` generates demo MQTT messages.
 
-```bash
-node src/mqtt-publisher.js
-```
+## Repository Structure
 
-This script publishes messages to the MQTT broker.
+- `backend/` – Node.js/TypeScript service bridging MQTT and WebSockets.
+- `frontend/` – Angular dashboard application.
+- `mosquitto/` – simple broker configuration.
 
-### Broker
 
-Start the Mosquitto broker with the custom configuration:
-
-```bash
-mosquitto -c mosquitto/config/mosquitto.conf
-```
-
-## Starting the Frontend
-
-### From the root directory
-
-Install dependencies and start the frontend development server:
-
-```bash
-npm install && npm run start:frontend
-```
-
-### From the frontend directory
-
-Alternatively, navigate to the frontend directory and run:
-
-```bash
-cd frontend
-npm install && ng serve
-```
-
-This will start the Angular development server for the frontend application.
