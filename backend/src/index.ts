@@ -5,7 +5,7 @@ import mqtt from 'mqtt';
 
 class SlidingWindow {
   private buffer: ScrapEvent[] = [];
-  constructor(private windowMs: number) {}
+  constructor(private windowMs: number) { }
   add(event: ScrapEvent) {
     this.buffer.push(event);
     const cutoff = Date.now() - this.windowMs;
@@ -56,8 +56,6 @@ mqttClient.on('message', (topic, payload) => {
     ...metrics,
     timestamp: new Date().toISOString()
   })
-
-  const message = payload.toString();
 });
 
 /* Basic REST health check */
