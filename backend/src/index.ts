@@ -3,7 +3,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import mqtt from 'mqtt';
 
-class SlidingWindow {
+export class SlidingWindow {
   private buffer: ScrapEvent[] = [];
   constructor(private windowMs: number) {}
   add(event: ScrapEvent) {
@@ -104,6 +104,8 @@ app.get('/api/health', (_: Request, res: Response) => {
   res.json({ status: 'ok' });
 });
 
-/*Start servers */
-const PORT = Number(process.env.PORT) || 3000;
-server.listen(PORT, () => console.log(`HTTP+WS listening on :${PORT}`));
+/*Start servers only if run directly*/
+if (require.main === module) {
+  const PORT = Number(process.env.PORT) || 3000;
+  server.listen(PORT, () => console.log(`HTTP+WS listening on :${PORT}`));
+}
