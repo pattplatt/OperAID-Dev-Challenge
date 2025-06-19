@@ -98,7 +98,6 @@ export class Dashboard implements OnInit {
   ngOnInit() {
     //  ---- Stream with unified metric shape ----
     this.mqttMessages$ = this.socketService.stream$.pipe(
-      tap(msg => console.log('[MQTT] Received:', msg)),
       map((msg: any): Metric => {
         // unwrap legacy `{ topic, payload }` envelope if present
         if (msg && typeof msg === 'object' && 'topic' in msg && 'payload' in msg) {
