@@ -29,10 +29,14 @@ From the repository root install all dependencies and start every service (broke
 npm install
 npm run start:all
 ```
+Or alternatively:
+```bash
+npm install && npm run start:all
+```
 
 To run only the broker, backend and publisher without the Angular dev server use:
 ```bash
-npm run start
+npm install && npm run start
 ```
 
 ## Individual Services
@@ -40,7 +44,7 @@ npm run start
 Each service can be started separately if needed.
 
 - **Backend** – see [backend/README.md](backend/README.md) for detailed instructions.
-- **Frontend** – from the root run `npm run start:frontend` or from the `frontend` directory run `ng serve`.
+- **Frontend** – from the root run `npm run start:frontend` or from the `frontend` directory run `ng serve`. For more info see [frontend/README.md](frontend/README.md)
 - **Broker** – `mosquitto -c mosquitto/config/mosquitto.conf`.
 - **Publisher** – `npm --prefix backend run publisher` generates demo MQTT messages.
 

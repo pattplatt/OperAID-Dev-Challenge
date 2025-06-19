@@ -12,8 +12,7 @@ This directory contains the Angular application for the OperAID project.
 Install dependencies and start the dev server:
 
 ```bash
-npm install
-ng serve
+npm install && ng serve
 ```
 
 Navigate to `http://localhost:4200/` to view the application. The server reloads on file changes.
