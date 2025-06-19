@@ -19,6 +19,31 @@ class SlidingWindow {
   }
 }
 
+/**
+ * Buffer for MQTT messages when no WebSocket clients are connected.
+ * Maintains a limited history so late connections still receive recent data.
+ */
+class FallbackBuffer<T = any> {
+  private buffer: T[] = [];
+  constructor(private capacity = 500) {}
+
+  /** Add a message to the buffer, trimming oldest if capacity exceeded */
+  push(msg: T) {
+    this.buffer.push(msg);
+    if (this.buffer.length > this.capacity) {
+      this.buffer.shift();
+    }
+  }
+
+  /** Drain buffered messages using the provided send function */
+  drain(sendFn: (msg: T) => void) {
+    while (this.buffer.length) {
+      const msg = this.buffer.shift()!;
+      sendFn(msg);
+    }
+  }
+}
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -27,6 +52,19 @@ const io = new Server(server, {
     methods: ['GET', 'POST'],
     credentials: true
   }
+});
+
+// Track connected WebSocket clients and store messages when none are connected
+let activeConnections = 0;
+const fallbackBuffer = new FallbackBuffer<Record<string, any>>();
+
+io.on('connection', socket => {
+  activeConnections++;
+  // Deliver any buffered MQTT messages to the new client
+  fallbackBuffer.drain(m => socket.emit('mqtt', m));
+  socket.on('disconnect', () => {
+    activeConnections--;
+  });
 });
 // 1. Define a type and a buffer map at top-level
 interface ScrapEvent {
@@ -50,14 +88,18 @@ mqttClient.on('message', (topic, payload) => {
   }
   const metrics = windowBuffers.get(key)!.add(ev);
 
-  io.emit('mqtt', {
+  const msg = {
     machineId: ev.machineId,
     scrapIndex: ev.scrapIndex,
     ...metrics,
     timestamp: new Date().toISOString()
-  })
+  };
 
-  const message = payload.toString();
+  if (activeConnections > 0) {
+    io.emit('mqtt', msg);
+  } else {
+    fallbackBuffer.push(msg);
+  }
 });
 
 /* Basic REST health check */
