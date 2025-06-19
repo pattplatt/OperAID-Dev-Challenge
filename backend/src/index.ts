@@ -55,16 +55,11 @@ const io = new Server(server, {
 });
 
 // Track connected WebSocket clients and store messages when none are connected
-let activeConnections = 0;
 const fallbackBuffer = new FallbackBuffer<Record<string, any>>();
 
 io.on('connection', socket => {
-  activeConnections++;
   // Deliver any buffered MQTT messages to the new client
   fallbackBuffer.drain(m => socket.emit('mqtt', m));
-  socket.on('disconnect', () => {
-    activeConnections--;
-  });
 });
 // 1. Define a type and a buffer map at top-level
 interface ScrapEvent {
@@ -95,10 +90,12 @@ mqttClient.on('message', (topic, payload) => {
     timestamp: new Date().toISOString()
   };
 
-  if (activeConnections > 0) {
-    io.emit('mqtt', msg);
-  } else {
-    fallbackBuffer.push(msg);
+  // Always buffer every message
+  fallbackBuffer.push(msg);
+  // If any client is connected, broadcast in real-time
+  const namespace = io.of("/");
+  if (namespace.sockets.size > 0) {
+    namespace.emit('mqtt', msg);
   }
 });
 
