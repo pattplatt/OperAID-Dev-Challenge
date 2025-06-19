@@ -1,11 +1,11 @@
-import express, { Request, Response } from 'express'
+import express, { Request, Response } from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import mqtt from 'mqtt';
 
 class SlidingWindow {
   private buffer: ScrapEvent[] = [];
-  constructor(private windowMs: number) { }
+  constructor(private windowMs: number) {}
   add(event: ScrapEvent) {
     this.buffer.push(event);
     const cutoff = Date.now() - this.windowMs;
@@ -50,23 +50,23 @@ const io = new Server(server, {
   cors: {
     origin: ['http://localhost:4200', 'http://localhost:5173'],
     methods: ['GET', 'POST'],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
 // Track connected WebSocket clients and store messages when none are connected
 const fallbackBuffer = new FallbackBuffer<Record<string, any>>();
 
-io.on('connection', socket => {
+io.on('connection', (socket) => {
   // Deliver any buffered MQTT messages to the new client
-  fallbackBuffer.drain(m => socket.emit('mqtt', m));
+  fallbackBuffer.drain((m) => socket.emit('mqtt', m));
 });
 // 1. Define a type and a buffer map at top-level
 interface ScrapEvent {
-  machineId: string
-  scrapIndex: number
-  value: number
-  timestamp: string
+  machineId: string;
+  scrapIndex: number;
+  value: number;
+  timestamp: string;
 }
 const windowBuffers = new Map<string, SlidingWindow>();
 
@@ -76,7 +76,7 @@ const mqttClient = mqtt.connect(mqttUrl);
 
 mqttClient.on('connect', () => mqttClient.subscribe('machines/+/scrap'));
 mqttClient.on('message', (topic, payload) => {
-  const ev = JSON.parse(payload.toString()) as ScrapEvent
+  const ev = JSON.parse(payload.toString()) as ScrapEvent;
   const key = `${ev.machineId}|${ev.scrapIndex}`;
   if (!windowBuffers.has(key)) {
     windowBuffers.set(key, new SlidingWindow(60 * 1000));
@@ -87,13 +87,13 @@ mqttClient.on('message', (topic, payload) => {
     machineId: ev.machineId,
     scrapIndex: ev.scrapIndex,
     ...metrics,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   // Always buffer every message
   fallbackBuffer.push(msg);
   // If any client is connected, broadcast in real-time
-  const namespace = io.of("/");
+  const namespace = io.of('/');
   if (namespace.sockets.size > 0) {
     namespace.emit('mqtt', msg);
   }
@@ -101,8 +101,8 @@ mqttClient.on('message', (topic, payload) => {
 
 /* Basic REST health check */
 app.get('/api/health', (_: Request, res: Response) => {
-  res.json({ status: 'ok' })
-})
+  res.json({ status: 'ok' });
+});
 
 /*Start servers */
 const PORT = Number(process.env.PORT) || 3000;

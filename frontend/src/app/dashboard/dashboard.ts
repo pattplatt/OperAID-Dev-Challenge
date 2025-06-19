@@ -20,16 +20,15 @@ type Metric = {
 };
 
 const METRIC_KEYS = ['sum', 'avg'] as const;
-type MetricKey = typeof METRIC_KEYS[number];
+type MetricKey = (typeof METRIC_KEYS)[number];
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, BaseChartDirective],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.scss'
+  styleUrl: './dashboard.scss',
 })
-
 export class Dashboard implements OnInit {
   mqttMessages$!: Observable<Metric[]>;
 
@@ -51,19 +50,19 @@ export class Dashboard implements OnInit {
       x: {
         type: 'time',
         time: {
-          unit: 'minute'
+          unit: 'minute',
         },
         title: {
           display: true,
-          text: 'Time'
-        }
+          text: 'Time',
+        },
       },
       y: {
         title: {
           display: true,
-          text: 'Value'
-        }
-      }
+          text: 'Value',
+        },
+      },
     },
     plugins: {
       tooltip: {
@@ -73,18 +72,18 @@ export class Dashboard implements OnInit {
             const scrapIdx = raw?.scrapIndex;
             const base = `${ctx.dataset.label}: ${ctx.formattedValue}`;
             return scrapIdx !== undefined ? `${base} (scrapIndex: ${scrapIdx})` : base;
-          }
-        }
+          },
+        },
       },
       legend: {
         onClick: () => {},
         labels: {
           usePointStyle: true,
           boxWidth: 20,
-          boxHeight: 10
-        }
-      }
-    }
+          boxHeight: 10,
+        },
+      },
+    },
   };
 
   chartType: 'line' = 'line';
@@ -93,7 +92,7 @@ export class Dashboard implements OnInit {
 
   hiddenState: Record<string, boolean> = {};
 
-  constructor(private socketService: SocketService) { }
+  constructor(private socketService: SocketService) {}
 
   ngOnInit() {
     //  ---- Stream with unified metric shape ----
@@ -106,57 +105,65 @@ export class Dashboard implements OnInit {
             machineId: p.machineId,
             scrapIndex: p.scrapIndex,
             sumLast60s: msg.sumLast60s ?? p.sumLast60s ?? 0,
-            avgLast60s: msg.avgLast60s ?? p.avgLast60s ?? (typeof p.value === 'number' ? p.value : 0),
+            avgLast60s:
+              msg.avgLast60s ?? p.avgLast60s ?? (typeof p.value === 'number' ? p.value : 0),
             countLast60s: msg.countLast60s ?? p.countLast60s ?? 1,
-            timestamp: p.timestamp ?? new Date().toISOString()
+            timestamp: p.timestamp ?? new Date().toISOString(),
           };
         }
         // assume message already has Metric shape
         return msg as Metric;
       }),
       scan((acc: Metric[], curr: Metric) => [...acc, curr], []),
-      shareReplay({ bufferSize: 1, refCount: true })
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
 
     // unique machine list (emits only when list actually changes)
     this.machineOptions$ = this.mqttMessages$.pipe(
-      map(messages => Array.from(new Set(messages.map(m => m.machineId))).sort()),
+      map((messages) => Array.from(new Set(messages.map((m) => m.machineId))).sort()),
       distinctUntilChanged(
-        (prev, curr) => prev.length === curr.length && prev.every((v, i) => v === curr[i])
-      )
+        (prev, curr) => prev.length === curr.length && prev.every((v, i) => v === curr[i]),
+      ),
     );
 
     // unique scrapIndex list
     this.scrapOptions$ = this.mqttMessages$.pipe(
-      map(messages => Array.from(new Set(messages.map(m => m.scrapIndex))).sort((a, b) => a - b)),
+      map((messages) =>
+        Array.from(new Set(messages.map((m) => m.scrapIndex))).sort((a, b) => a - b),
+      ),
       //tap(scraps => this.selectedScraps$.next(scraps)),
       distinctUntilChanged(
-        (prev, curr) => prev.length === curr.length && prev.every((v, i) => v === curr[i])
-      )
+        (prev, curr) => prev.length === curr.length && prev.every((v, i) => v === curr[i]),
+      ),
     );
 
     // Keep local copy of every discovered machine ID
-    this.machineOptions$.subscribe(list => (this.allMachines = list));
+    this.machineOptions$.subscribe((list) => (this.allMachines = list));
 
-    this.chartData$ = combineLatest([this.mqttMessages$, this.selectedMachines$, this.selectedMetric$, this.selectedScraps$]).pipe(
+    this.chartData$ = combineLatest([
+      this.mqttMessages$,
+      this.selectedMachines$,
+      this.selectedMetric$,
+      this.selectedScraps$,
+    ]).pipe(
       map(([messages, selectedMachines, metric, selectedScraps]) => {
         // Every machine we’ve ever seen
-        const machines = Array.from(new Set(messages.map(m => m.machineId)));
-        machines.forEach(m => {
+        const machines = Array.from(new Set(messages.map((m) => m.machineId)));
+        machines.forEach((m) => {
           if (!(m in this.hiddenState)) {
             this.hiddenState[m] = false;
           }
         });
         const showAll = selectedMachines.length === 0;
 
-        const datasets = machines.map(machineId => {
+        const datasets = machines.map((machineId) => {
           const dataPoints = messages
-            .filter(m => m.machineId === machineId)
-            .filter(m => selectedScraps.length === 0 || selectedScraps.includes(m.scrapIndex))
-            .map(m => ({
+            .filter((m) => m.machineId === machineId)
+            .filter((m) => selectedScraps.length === 0 || selectedScraps.includes(m.scrapIndex))
+            .map((m) => ({
               x: new Date(m.timestamp),
               y: metric === 'sum' ? m.sumLast60s : m.avgLast60s,
-              scrapIndex: m.scrapIndex
+              scrapIndex: m.scrapIndex,
             }));
 
           return {
@@ -165,12 +172,14 @@ export class Dashboard implements OnInit {
             fill: false,
             borderColor: this.getColorForMachine(machineId),
             tension: 0.1,
-            hidden: this.hiddenState[machineId] ?? (showAll ? false : !selectedMachines.includes(machineId))
+            hidden:
+              this.hiddenState[machineId] ??
+              (showAll ? false : !selectedMachines.includes(machineId)),
           };
         });
 
         return { datasets };
-      })
+      }),
     );
   }
 
@@ -178,17 +187,17 @@ export class Dashboard implements OnInit {
     const current = this.selectedMachines$.getValue();
 
     if (checked) {
-      this.hiddenState[machine] = false;           // show this machine
+      this.hiddenState[machine] = false; // show this machine
       if (!current.includes(machine)) {
         this.selectedMachines$.next([...current, machine]);
       }
     } else {
-      this.hiddenState[machine] = true;            // hide this machine
+      this.hiddenState[machine] = true; // hide this machine
       if (current.length === 0) {
-        const newSelection = this.allMachines.filter(m => m !== machine);
+        const newSelection = this.allMachines.filter((m) => m !== machine);
         this.selectedMachines$.next(newSelection);
       } else {
-        this.selectedMachines$.next(current.filter(m => m !== machine));
+        this.selectedMachines$.next(current.filter((m) => m !== machine));
       }
     }
   }
@@ -198,7 +207,7 @@ export class Dashboard implements OnInit {
     if (checked && !current.includes(scrap)) {
       this.selectedScraps$.next([...current, scrap]);
     } else if (!checked) {
-      this.selectedScraps$.next(current.filter(s => s !== scrap));
+      this.selectedScraps$.next(current.filter((s) => s !== scrap));
     }
   }
 
@@ -222,7 +231,7 @@ export class Dashboard implements OnInit {
       'rgba(255, 206, 86, 1)',
       'rgba(75, 192, 192, 1)',
       'rgba(153, 102, 255, 1)',
-      'rgba(255, 159, 64, 1)'
+      'rgba(255, 159, 64, 1)',
     ];
     let hash = 0;
     for (let i = 0; i < machineId.length; i++) {

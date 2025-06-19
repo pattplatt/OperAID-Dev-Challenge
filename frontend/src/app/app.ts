@@ -6,7 +6,7 @@ import { Dashboard } from './dashboard/dashboard'; // 👈 import it
   selector: 'app-root',
   imports: [RouterOutlet, Dashboard],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {
   protected title = 'operaid-client';

@@ -1,39 +1,59 @@
 <h1>Dashboard</h1>
 
-<div class="machine-toggle">
-</div>
-<div class="metric-toggle" style="margin-top: 0.5rem;">
-    Data Aggregation:
-    <label>
-        <input type="radio" name="metric" value="sum" [checked]="(selectedMetric$ | async) === 'sum'"
-            (change)="onMetricChange('sum')" />
-        Sum&nbsp;(60 s)
-    </label>
-    &nbsp;&nbsp;
-    <label>
-        <input type="radio" name="metric" value="avg" [checked]="(selectedMetric$ | async) === 'avg'"
-            (change)="onMetricChange('avg')" />
-        Avg&nbsp;(60 s)
-    </label>
-</div>
-
-<div class="machine-toggle" *ngIf="machineOptions$ | async as machines" style="margin-top: 0.5rem;">
-    Machines:
-    <label *ngFor="let m of machines; trackBy: trackByMachine" class="machine-checkbox">
-
-        <input type="checkbox" [checked]="!hiddenState[m]" (change)="onMachineToggle(m, $any($event.target).checked)" />
-        {{ m }}
-    </label>
-</div>
-
-<div class="scrap-toggle" *ngIf="scrapOptions$ | async as scraps" style="margin-top: 0.5rem;">
-    Filter after scrap index:
-    <label *ngFor="let s of scraps; trackBy: trackByScrap" class="scrap-checkbox">
-        <input type="checkbox" [checked]="(selectedScraps$ | async)?.includes(s)"
-            (change)="onScrapToggle(s, $any($event.target).checked)" />
-        {{ s }}
-    </label>
+<div class="machine-toggle"></div>
+<div class="metric-toggle" style="margin-top: 0.5rem">
+  Data Aggregation:
+  <label>
+    <input
+      type="radio"
+      name="metric"
+      value="sum"
+      [checked]="(selectedMetric$ | async) === 'sum'"
+      (change)="onMetricChange('sum')"
+    />
+    Sum&nbsp;(60 s)
+  </label>
+  &nbsp;&nbsp;
+  <label>
+    <input
+      type="radio"
+      name="metric"
+      value="avg"
+      [checked]="(selectedMetric$ | async) === 'avg'"
+      (change)="onMetricChange('avg')"
+    />
+    Avg&nbsp;(60 s)
+  </label>
 </div>
 
-<canvas baseChart [data]="(chartData$ | async) || undefined" [options]="chartOptions" [type]="chartType"
-    style="display:block; height:500px; width:100%; margin-top: 1rem;"></canvas>
+<div class="machine-toggle" *ngIf="machineOptions$ | async as machines" style="margin-top: 0.5rem">
+  Machines:
+  <label *ngFor="let m of machines; trackBy: trackByMachine" class="machine-checkbox">
+    <input
+      type="checkbox"
+      [checked]="!hiddenState[m]"
+      (change)="onMachineToggle(m, $any($event.target).checked)"
+    />
+    {{ m }}
+  </label>
+</div>
+
+<div class="scrap-toggle" *ngIf="scrapOptions$ | async as scraps" style="margin-top: 0.5rem">
+  Filter after scrap index:
+  <label *ngFor="let s of scraps; trackBy: trackByScrap" class="scrap-checkbox">
+    <input
+      type="checkbox"
+      [checked]="(selectedScraps$ | async)?.includes(s)"
+      (change)="onScrapToggle(s, $any($event.target).checked)"
+    />
+    {{ s }}
+  </label>
+</div>
+
+<canvas
+  baseChart
+  [data]="(chartData$ | async) || undefined"
+  [options]="chartOptions"
+  [type]="chartType"
+  style="display: block; height: 500px; width: 100%; margin-top: 1rem"
+></canvas>
